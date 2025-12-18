@@ -116,8 +116,8 @@ class KeywordFilter:
 
 
 def iter_candidates(
-    dataset_name: str = "HuggingFaceFW/fineweb",
-    dataset_config: str = "sample-10BT",
+    dataset_name: str = "HuggingFaceFW/fineweb-edu",
+    dataset_config: str = "default",
     split: str = "train",
     lang_model_path: str = "models/lid.176.bin",
     keywords_path: str = "data/keywords.txt",

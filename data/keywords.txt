@@ -1,86 +1,122 @@
-# Climate and weather keywords (case-insensitive matching)
+# Climate and Nature keywords (case-insensitive matching)
+# Format: keyword per line, organized by category and strength
+
+# === CLIMATE: STRONG SIGNALS ===
 climate change
 global warming
 greenhouse gas
-greenhouse effect
-carbon emission
-carbon footprint
+ghg
 carbon dioxide
-co2 emission
-methane emission
-climate crisis
-climate emergency
-climate action
-climate policy
-climate adaptation
-climate mitigation
-climate risk
-climate impact
-climate science
-climate model
-ipcc
-paris agreement
-kyoto protocol
+co2
+methane
+nitrous oxide
+carbon budget
 net zero
-carbon neutral
 decarbonization
 renewable energy
-fossil fuel
-sea level rise
-ocean acidification
-ice sheet
-glacier melt
-arctic ice
-permafrost
-extreme weather
-weather event
-heat wave
-heatwave
-cold wave
-drought
-flooding
-flash flood
-hurricane
-typhoon
-cyclone
-tornado
-wildfire
-forest fire
-bushfire
-storm surge
-blizzard
-extreme precipitation
-heavy rainfall
-monsoon
-el nino
-la nina
-climate refugee
-climate migration
-food security
-water scarcity
-desertification
-biodiversity loss
-coral bleaching
-ecosystem collapse
-environmental disaster
-natural disaster
-weather disaster
-climate disaster
-temperature rise
-global temperature
-warming trend
-atmospheric co2
 carbon capture
+carbon sequestration
+negative emissions
+emissions trading
+carbon pricing
+carbon neutrality
+integrated assessment model
+climate scenario
+climate modelling
+ipcc
+el niño
+enso
+radiative forcing
+radiative imbalance
+arctic amplification
+ocean heat content
+sea level rise
+permafrost
+cryosphere
+monsoon
+flood risk
+storm surge
+extreme weather
+heatwave
+drought
+climate hazard
+loss and damage
+loss and damage fund
+1.5°c
+2°c
+paris agreement
+global stocktake
+nationally determined contribution
+ndc
+just transition
+transition pathway
+climate litigation
+climate governance
 climate finance
-green energy
-solar power
-wind power
-climate activism
-climate protest
-greta thunberg
-cop26
-cop27
-cop28
-unfccc
-climate denial
-climate skeptic
+climate justice
+
+# === CLIMATE: WEAK SIGNALS ===
+adaptation
+climate resilience
+climate risk
+climate policy
+climate mainstreaming
+climate diplomacy
+climate accountability
+health impact
+food security
+water security
+vector-borne disease
+climate migration
+disaster risk reduction
+compound event
+climate system
+climate variability
+climate dynamics
+energy balance
+water vapour feedback
+atmospheric circulation
+paleoclimate
+proxy record
+temperature rise
+
+# === NATURE: STRONG SIGNALS ===
+biodiversity
+ecosystem services
+ecosystem integrity
+ecosystem
+ecosystems
+habitat
+species loss
+endangered species
+invasive species
+conservation
+restoration
+reforestation
+afforestation
+nature-based solution
+nature-based solutions
+natural capital
+wetland
+wetlands
+peatland
+mangrove
+mangroves
+wildlife corridor
+protected area
+forest management
+land degradation
+soil health
+pollinator
+biodiversity finance
+living planet index
+ipbes
+biocultural diversity
+genetic diversity
+deforestation
+landscape connectivity
+
+# === NATURE: WEAK SIGNALS ===
+ecological
+ecosystem health
+biodiversity loss

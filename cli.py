@@ -44,7 +44,7 @@ def cli():
 @click.option('--output', '-o', default='data/gpt_labels_10k.jsonl', help='Output JSONL path')
 @click.option('--model', '-m', default='gpt-4o-mini', help='OpenAI model to use')
 @click.option('--max-chars', default=2000, help='Max chars per sample (truncated)')
-@click.option('--dataset-config', default='sample-10BT', help='FineWeb config')
+@click.option('--dataset-config', default='default', help='FineWeb-Edu config')
 @click.option('--resume/--no-resume', default=True, help='Resume from existing labels')
 @click.option('--rate-limit', default=0.1, help='Delay between API calls (seconds)')
 def sample_label(num_samples, output, model, max_chars, dataset_config, resume, rate_limit):
@@ -187,7 +187,7 @@ def train_fasttext(train, valid, output, lr, epoch, word_ngrams, dim, threshold)
 @click.option('--threshold', default=0.5, help='Classifier probability threshold')
 @click.option('--buffer-size', default=5000, help='Records per shard')
 @click.option('--max-records', default=None, type=int, help='Maximum records to upload')
-@click.option('--dataset-config', default='sample-10BT', help='FineWeb config')
+@click.option('--dataset-config', default='default', help='FineWeb-Edu config')
 @click.option('--resume/--no-resume', default=True, help='Resume from previous state')
 def stream_filter_upload(repo_id, classifier, threshold, buffer_size, max_records, dataset_config, resume):
     """Stream filter FineWeb and upload to HuggingFace."""
