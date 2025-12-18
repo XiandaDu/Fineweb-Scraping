@@ -1,0 +1,86 @@
+# Climate and weather keywords (case-insensitive matching)
+climate change
+global warming
+greenhouse gas
+greenhouse effect
+carbon emission
+carbon footprint
+carbon dioxide
+co2 emission
+methane emission
+climate crisis
+climate emergency
+climate action
+climate policy
+climate adaptation
+climate mitigation
+climate risk
+climate impact
+climate science
+climate model
+ipcc
+paris agreement
+kyoto protocol
+net zero
+carbon neutral
+decarbonization
+renewable energy
+fossil fuel
+sea level rise
+ocean acidification
+ice sheet
+glacier melt
+arctic ice
+permafrost
+extreme weather
+weather event
+heat wave
+heatwave
+cold wave
+drought
+flooding
+flash flood
+hurricane
+typhoon
+cyclone
+tornado
+wildfire
+forest fire
+bushfire
+storm surge
+blizzard
+extreme precipitation
+heavy rainfall
+monsoon
+el nino
+la nina
+climate refugee
+climate migration
+food security
+water scarcity
+desertification
+biodiversity loss
+coral bleaching
+ecosystem collapse
+environmental disaster
+natural disaster
+weather disaster
+climate disaster
+temperature rise
+global temperature
+warming trend
+atmospheric co2
+carbon capture
+climate finance
+green energy
+solar power
+wind power
+climate activism
+climate protest
+greta thunberg
+cop26
+cop27
+cop28
+unfccc
+climate denial
+climate skeptic

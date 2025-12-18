@@ -1,0 +1,4 @@
+You are labeling web text for a dataset.
+Question: Is this text substantially about climate, climate change, global warming, extreme or disruptive weather events, or their impacts (e.g., floods, hurricanes, droughts, heatwaves, wildfires, climate risk, adaptation/mitigation)?
+Answer ONLY with YES or NO.
+Text: {text}
