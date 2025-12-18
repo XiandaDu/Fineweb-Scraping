@@ -22,19 +22,29 @@ fasttext.FastText.eprint = lambda x: None
 def safe_predict(model, text: str, k: int = 1):
     """
     Safely call FastText predict with NumPy 2.x compatibility.
+    Returns: (labels_tuple, probs_list) where probs are floats
     """
+    clean = text.replace("\n", " ").strip()
+    if not clean:
+        return (("__label__other",) * k, [0.0] * k)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         try:
-            labels, probs = model.predict(text, k=k)
-            # Convert to numpy array safely for NumPy 2.x
-            return labels, np.asarray(probs)
-        except ValueError:
-            # Fallback: manually get predictions
-            result = model.f.predict(text.replace("\n", " "), k, 0.0, "")
-            labels = result[0]
-            probs = np.asarray(result[1])
-            return tuple(labels), probs
+            labels, probs = model.predict(clean, k=k)
+            # Convert probs to a regular Python list of floats
+            probs_list = [float(p) for p in probs]
+            return labels, probs_list
+        except (ValueError, TypeError) as e:
+            # Fallback for NumPy 2.x: use model.f directly
+            try:
+                result = model.f.predict(clean, k, 0.0, "")
+                labels = tuple(result[0])
+                probs_list = [float(p) for p in result[1]]
+                return labels, probs_list
+            except Exception:
+                # Last resort fallback
+                return (("__label__other",) * k, [0.0] * k)
 
 
 def clean_text(text: str) -> str:
@@ -236,9 +246,9 @@ def evaluate_classifier(
 
             # Find climate probability
             climate_prob = 0.0
-            for label, prob in zip(labels, probs):
-                if label == '__label__climate':
-                    climate_prob = float(prob)
+            for i, label in enumerate(labels):
+                if label == '__label__climate' and i < len(probs):
+                    climate_prob = probs[i]
                     break
 
             pred_label = 'climate' if climate_prob >= threshold else 'other'
@@ -303,9 +313,9 @@ class ClimateClassifier:
 
         # Find climate probability
         climate_prob = 0.0
-        for label, prob in zip(labels, probs):
-            if label == '__label__climate':
-                climate_prob = float(prob)
+        for i, label in enumerate(labels):
+            if label == '__label__climate' and i < len(probs):
+                climate_prob = probs[i]
                 break
 
         if climate_prob >= self.threshold:
@@ -323,8 +333,8 @@ class ClimateClassifier:
         cleaned = clean_text(text)
         labels, probs = safe_predict(self.model, cleaned, k=2)
 
-        for label, prob in zip(labels, probs):
-            if label == '__label__climate':
-                return float(prob)
+        for i, label in enumerate(labels):
+            if label == '__label__climate' and i < len(probs):
+                return probs[i]
 
         return 0.0
