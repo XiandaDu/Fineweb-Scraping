@@ -154,8 +154,13 @@ def iter_candidates(
     )
 
     # Initialize filters
+    logger.info("Initializing language filter...")
     lang_filter = LanguageFilter(lang_model_path, english_prob_threshold)
+    logger.info("Language filter initialized")
+    
+    logger.info("Initializing keyword filter...")
     keyword_filter = KeywordFilter(keywords_path)
+    logger.info(f"Keyword filter initialized with {len(keyword_filter.keywords)} keywords")
 
     # Statistics
     total_processed = 0
@@ -163,10 +168,49 @@ def iter_candidates(
     passed_keywords = 0
 
     logger.info("Starting streaming filter...")
+    logger.info("Attempting to get first sample from dataset (this may take a moment)...")
+    
+    # Try to get the first sample to verify the iterator works
+    dataset_iter = iter(dataset)
+    first_sample_processed = False
+    try:
+        first_sample = next(dataset_iter)
+        logger.info("Successfully retrieved first sample from dataset! Processing will begin now...")
+        first_sample_processed = True
+        total_processed = 1
+        
+        # Process the first sample
+        text = first_sample.get('text', '')
+        if text:
+            # Stage A: English filter
+            if lang_filter.is_english(text):
+                passed_english += 1
+                # Stage B: Keyword filter
+                if keyword_filter.matches(text):
+                    passed_keywords += 1
+                    # Yield matching sample with metadata
+                    yield {
+                        'text': text,
+                        'id': first_sample.get('id', f'sample_{total_processed}'),
+                        'url': first_sample.get('url', ''),
+                        'dump': first_sample.get('dump', ''),
+                        'date': first_sample.get('date', ''),
+                    }
+                    logger.info(f"First matching sample found!")
+    except StopIteration:
+        logger.error("Dataset iterator is empty!")
+        return
+    except Exception as e:
+        logger.error(f"Error getting first sample from dataset: {e}", exc_info=True)
+        raise
 
     try:
-        for sample in dataset:
+        for sample in dataset_iter:
             total_processed += 1
+
+            # Log that we're continuing processing
+            if total_processed == 2 and first_sample_processed:
+                logger.info(f"Continuing to process samples...")
 
             try:
                 text = sample.get('text', '')
@@ -192,8 +236,21 @@ def iter_candidates(
                     'date': sample.get('date', ''),
                 }
 
-                # Log progress
-                if total_processed % log_interval == 0:
+                # Log first match
+                if passed_keywords == 1:
+                    logger.info(f"First matching sample found after processing {total_processed:,} samples")
+
+                # Log progress (use smaller interval for early samples)
+                early_interval = min(1000, log_interval)
+                if total_processed <= 10000 and total_processed % early_interval == 0:
+                    eng_rate = passed_english / total_processed * 100
+                    kw_rate = passed_keywords / total_processed * 100
+                    logger.info(
+                        f"Processed: {total_processed:,} | "
+                        f"English: {passed_english:,} ({eng_rate:.2f}%) | "
+                        f"Keywords: {passed_keywords:,} ({kw_rate:.2f}%)"
+                    )
+                elif total_processed % log_interval == 0:
                     eng_rate = passed_english / total_processed * 100
                     kw_rate = passed_keywords / total_processed * 100
                     logger.info(

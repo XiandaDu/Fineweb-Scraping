@@ -243,9 +243,14 @@ def stream_filter_upload(
     }
 
     logger.info(f"Starting stream-filter-upload to {repo_id}...")
+    logger.info("Waiting for first sample from iterator...")
 
     try:
+        sample_count = 0
         for sample in samples:
+            sample_count += 1
+            if sample_count == 1:
+                logger.info("Received first sample from iterator! Starting processing...")
             stats['total_processed'] += 1
 
             try:
