@@ -213,6 +213,7 @@ def stream_filter_upload(repo_id, classifier, threshold, buffer_size, max_record
 
     # Get candidates
     candidates = iter_candidates(
+        dataset_name="HuggingFaceFW/fineweb-edu",
         dataset_config=dataset_config,
         max_samples=None,  # No limit on input
         log_interval=10000

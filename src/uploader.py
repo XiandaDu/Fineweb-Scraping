@@ -153,10 +153,10 @@ class StreamingUploader:
 
         return success
 
-    def resume(self) -> int:
+    def resume(self) -> dict:
         """
         Resume from previous state.
-        Returns the number of records to skip.
+        Returns state dict with shard_index and total_uploaded.
         """
         state = self._load_state()
 
@@ -168,7 +168,7 @@ class StreamingUploader:
                 f"{self.total_uploaded} records previously uploaded"
             )
 
-        return self.total_uploaded
+        return state
 
     def get_stats(self) -> dict:
         """Get upload statistics."""
@@ -227,9 +227,11 @@ def stream_filter_upload(
     uploader._create_repo_if_needed()
 
     # Resume if needed
-    skip_count = 0
+    resume_state = {}
     if resume:
-        skip_count = uploader.resume()
+        resume_state = uploader.resume()
+        # Note: We can't reliably skip samples in the iterator since filtering
+        # means processed count != uploaded count. Resume is handled at shard level.
 
     uploader.start_time = time.time()
 
@@ -237,61 +239,75 @@ def stream_filter_upload(
     stats = {
         'total_processed': 0,
         'passed_classifier': 0,
-        'skipped_resume': 0,
         'uploaded': 0
     }
 
     logger.info(f"Starting stream-filter-upload to {repo_id}...")
 
-    for sample in samples:
-        stats['total_processed'] += 1
+    try:
+        for sample in samples:
+            stats['total_processed'] += 1
 
-        # Skip already uploaded records (resume)
-        if stats['total_processed'] <= skip_count:
-            stats['skipped_resume'] += 1
-            continue
+            try:
+                text = sample.get('text', '')
+                if not text:
+                    continue
 
-        text = sample.get('text', '')
+                # Stage C: Apply trained classifier
+                if not classifier.is_climate(text):
+                    continue
 
-        # Stage C: Apply trained classifier
-        if not classifier.is_climate(text):
-            continue
+                stats['passed_classifier'] += 1
 
-        stats['passed_classifier'] += 1
+                # Get probability for metadata
+                climate_prob = classifier.get_climate_prob(text)
 
-        # Get probability for metadata
-        climate_prob = classifier.get_climate_prob(text)
+                # Build record for upload
+                record = {
+                    'text': text,
+                    'id': sample.get('id', ''),
+                    'url': sample.get('url', ''),
+                    'climate_prob': round(climate_prob, 4),
+                    'source': 'fineweb'
+                }
 
-        # Build record for upload
-        record = {
-            'text': text,
-            'id': sample.get('id', ''),
-            'url': sample.get('url', ''),
-            'climate_prob': round(climate_prob, 4),
-            'source': 'fineweb'
-        }
+                # Add to uploader
+                uploaded = uploader.add_record(record)
 
-        # Add to uploader
-        uploaded = uploader.add_record(record)
+                if uploaded:
+                    stats['uploaded'] = uploader.total_uploaded
 
-        if uploaded:
-            stats['uploaded'] = uploader.total_uploaded
+                # Check limit
+                if max_records and stats['passed_classifier'] >= max_records:
+                    logger.info(f"Reached max_records limit: {max_records}")
+                    break
 
-        # Check limit
-        if max_records and stats['passed_classifier'] >= max_records:
-            logger.info(f"Reached max_records limit: {max_records}")
-            break
+                # Log progress
+                if stats['total_processed'] % log_interval == 0:
+                    pass_rate = stats['passed_classifier'] / stats['total_processed'] * 100 if stats['total_processed'] > 0 else 0
+                    upload_stats = uploader.get_stats()
+                    logger.info(
+                        f"Processed: {stats['total_processed']:,} | "
+                        f"Passed: {stats['passed_classifier']:,} ({pass_rate:.2f}%) | "
+                        f"Uploaded: {upload_stats['total_records']:,} | "
+                        f"Shards: {upload_stats['shards_uploaded']}"
+                    )
 
-        # Log progress
-        if stats['total_processed'] % log_interval == 0:
-            pass_rate = stats['passed_classifier'] / stats['total_processed'] * 100
-            upload_stats = uploader.get_stats()
-            logger.info(
-                f"Processed: {stats['total_processed']:,} | "
-                f"Passed: {stats['passed_classifier']:,} ({pass_rate:.2f}%) | "
-                f"Uploaded: {upload_stats['total_records']:,} | "
-                f"Shards: {upload_stats['shards_uploaded']}"
-            )
+            except KeyboardInterrupt:
+                logger.info("Interrupted by user")
+                raise
+            except Exception as e:
+                logger.warning(f"Error processing sample {stats['total_processed']}: {e}")
+                continue
+
+    except KeyboardInterrupt:
+        logger.info("Interrupted by user - flushing buffer...")
+        uploader.flush()
+        raise
+    except Exception as e:
+        logger.error(f"Fatal error in stream processing: {e}", exc_info=True)
+        uploader.flush()
+        raise
 
     # Final flush
     uploader.flush()

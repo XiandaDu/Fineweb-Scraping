@@ -164,46 +164,59 @@ def iter_candidates(
 
     logger.info("Starting streaming filter...")
 
-    for sample in dataset:
-        total_processed += 1
+    try:
+        for sample in dataset:
+            total_processed += 1
 
-        text = sample.get('text', '')
-        if not text:
-            continue
+            try:
+                text = sample.get('text', '')
+                if not text:
+                    continue
 
-        # Stage A: English filter
-        if not lang_filter.is_english(text):
-            continue
-        passed_english += 1
+                # Stage A: English filter
+                if not lang_filter.is_english(text):
+                    continue
+                passed_english += 1
 
-        # Stage B: Keyword filter
-        if not keyword_filter.matches(text):
-            continue
-        passed_keywords += 1
+                # Stage B: Keyword filter
+                if not keyword_filter.matches(text):
+                    continue
+                passed_keywords += 1
 
-        # Yield matching sample with metadata
-        yield {
-            'text': text,
-            'id': sample.get('id', f'sample_{total_processed}'),
-            'url': sample.get('url', ''),
-            'dump': sample.get('dump', ''),
-            'date': sample.get('date', ''),
-        }
+                # Yield matching sample with metadata
+                yield {
+                    'text': text,
+                    'id': sample.get('id', f'sample_{total_processed}'),
+                    'url': sample.get('url', ''),
+                    'dump': sample.get('dump', ''),
+                    'date': sample.get('date', ''),
+                }
 
-        # Log progress
-        if total_processed % log_interval == 0:
-            eng_rate = passed_english / total_processed * 100
-            kw_rate = passed_keywords / total_processed * 100
-            logger.info(
-                f"Processed: {total_processed:,} | "
-                f"English: {passed_english:,} ({eng_rate:.2f}%) | "
-                f"Keywords: {passed_keywords:,} ({kw_rate:.2f}%)"
-            )
+                # Log progress
+                if total_processed % log_interval == 0:
+                    eng_rate = passed_english / total_processed * 100
+                    kw_rate = passed_keywords / total_processed * 100
+                    logger.info(
+                        f"Processed: {total_processed:,} | "
+                        f"English: {passed_english:,} ({eng_rate:.2f}%) | "
+                        f"Keywords: {passed_keywords:,} ({kw_rate:.2f}%)"
+                    )
 
-        # Check limit
-        if max_samples and passed_keywords >= max_samples:
-            logger.info(f"Reached max_samples limit: {max_samples}")
-            break
+                # Check limit
+                if max_samples and passed_keywords >= max_samples:
+                    logger.info(f"Reached max_samples limit: {max_samples}")
+                    break
+
+            except Exception as e:
+                logger.warning(f"Error processing sample {total_processed}: {e}")
+                continue
+
+    except KeyboardInterrupt:
+        logger.info("Interrupted by user")
+        raise
+    except Exception as e:
+        logger.error(f"Fatal error in dataset iteration: {e}", exc_info=True)
+        raise
 
     # Final statistics
     if total_processed > 0:
